@@ -31,7 +31,7 @@ const formSchema = z.object({
 });
 
 interface BookingModalProps {
-  category: RoomCategory; // RoomCategory enum value
+  category: RoomCategory;
   pricePerNight: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -48,11 +48,7 @@ export function BookingModal({
   const [isLoading, setIsLoading] = useState(false);
   const [totalPrice, setTotalPrice] = useState(pricePerNight);
 
-  const { write: writeBooking, data: hash } = useContractWrite({
-    address: BOOKING_ADDRESS,
-    abi: bookingAbi,
-    functionName: "bookRoomByCategory",
-  });
+  const { writeContract, data: hash } = useContractWrite();
 
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
@@ -78,20 +74,23 @@ export function BookingModal({
   // 计算总价
   useEffect(() => {
     const nights = parseInt(form.watch("numberOfNights") || "1");
-    const price = parseFloat(pricePerNight);
+    const price = parseInt(pricePerNight);
     setTotalPrice((nights * price).toString());
   }, [form.watch("numberOfNights"), pricePerNight]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
-      const checkInDate = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+      const checkInDate = Math.floor(Date.now() / 1000); // 当前时间戳（秒）
       const checkOutDate =
-        checkInDate + parseInt(values.numberOfNights) * 24 * 60 * 60; // Add days in seconds
+        checkInDate + parseInt(values.numberOfNights) * 24 * 60 * 60; // 加上预��天数（秒）
 
-      writeBooking({
+      writeContract({
+        address: BOOKING_ADDRESS,
+        abi: bookingAbi,
+        functionName: "bookRoomByCategory",
         args: [
-          category, // RoomCategory enum value
+          BigInt(category), // RoomCategory enum value
           BigInt(checkInDate),
           BigInt(checkOutDate),
         ],
@@ -114,11 +113,11 @@ export function BookingModal({
           <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
             <div>
               <p className="text-sm text-muted-foreground">Category</p>
-              <p className="font-medium">{category}</p>
+              <p className="font-medium">{RoomCategory[category]}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Price per night</p>
-              <p className="font-medium">{pricePerNight} ETH</p>
+              <p className="font-medium">{pricePerNight}</p>
             </div>
           </div>
 
@@ -173,7 +172,7 @@ export function BookingModal({
               <div className="p-4 bg-muted rounded-lg">
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Total Price:</span>
-                  <span className="font-bold text-lg">{totalPrice} ETH</span>
+                  <span className="font-bold text-lg">{totalPrice}</span>
                 </div>
               </div>
 

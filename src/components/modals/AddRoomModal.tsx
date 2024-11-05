@@ -94,7 +94,10 @@ export function AddRoomModal({
         address: BOOKING_ADDRESS,
         abi: bookingAbi,
         functionName: "addRoom",
-        args: [parseInt(values.category), BigInt(values.pricePerNight)],
+        args: [
+          parseInt(values.category),
+          BigInt(Math.floor(Number(values.pricePerNight))),
+        ],
       });
     } catch (error: any) {
       console.error("Add room error:", error);
@@ -148,10 +151,10 @@ export function AddRoomModal({
               name="pricePerNight"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price per Night (ETH)</FormLabel>
+                  <FormLabel>Price per Night</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter price in ETH"
+                      placeholder="Enter price"
                       {...field}
                       type="number"
                       step="0.01"

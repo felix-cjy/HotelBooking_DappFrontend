@@ -159,8 +159,8 @@ export function RoomCard({ room, onSuccess }: RoomCardProps) {
 
       {/* Modals */}
       <BookingModal
-        roomId={Number(room.id)}
-        pricePerNight={formatEther(room.pricePerNight)}
+        category={roomCategory}
+        pricePerNight={Number(room.pricePerNight).toString()}
         open={showBookingModal}
         onOpenChange={setShowBookingModal}
         onSuccess={onSuccess}

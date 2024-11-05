@@ -25,10 +25,9 @@ import {
 import { StarRating } from "@/components/ui/star-rating";
 import { BOOKING_ADDRESS } from "@/constants/addresses";
 import { bookingAbi } from "@/constants/abis/bookingAbi";
-import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
-  rating: z.number().min(1).max(5),
+  rating: z.number().min(1, "Please select a rating").max(5),
   comment: z
     .string()
     .min(10, "Comment must be at least 10 characters")
@@ -50,11 +49,7 @@ export function AddReviewModal({
 }: AddReviewModalProps) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const { write: writeReview, data: hash } = useContractWrite({
-    address: BOOKING_ADDRESS,
-    abi: bookingAbi,
-    functionName: "addReview",
-  });
+  const { writeContract, data: hash } = useContractWrite();
 
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
@@ -81,12 +76,12 @@ export function AddReviewModal({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
-      writeReview({
-        args: [
-          BigInt(roomId),
-          values.rating, // uint8 (1-5)
-          values.comment,
-        ],
+
+      writeContract({
+        address: BOOKING_ADDRESS,
+        abi: bookingAbi,
+        functionName: "addReview",
+        args: [BigInt(roomId), BigInt(values.rating), values.comment],
       });
     } catch (error: any) {
       console.error("Add review error:", error);
@@ -108,7 +103,7 @@ export function AddReviewModal({
               name="rating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Rating</FormLabel>
+                  <FormLabel>Rating (1-5 stars)</FormLabel>
                   <FormControl>
                     <StarRating
                       value={field.value}
@@ -129,7 +124,7 @@ export function AddReviewModal({
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder="Share your experience..."
+                      placeholder="Share your experience (minimum 10 characters)..."
                       className="min-h-[100px]"
                       disabled={isLoading || isConfirming}
                     />
@@ -140,7 +135,7 @@ export function AddReviewModal({
             />
             <Button
               type="submit"
-              disabled={isLoading || isConfirming}
+              disabled={isLoading || isConfirming || form.watch("rating") === 0}
               className="w-full"
             >
               {isConfirming

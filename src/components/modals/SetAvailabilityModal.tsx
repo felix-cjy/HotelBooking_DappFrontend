@@ -121,9 +121,7 @@ export function SetAvailabilityModal({
                   <tr key={room.id} className="border-b">
                     <td className="p-2">{room.id.toString()}</td>
                     <td className="p-2">{getCategoryString(room.category)}</td>
-                    <td className="p-2">
-                      {formatEther(room.pricePerNight)} ETH
-                    </td>
+                    <td className="p-2">{formatPrice(room.pricePerNight)}</td>
                     <td className="p-2">
                       <span
                         className={`px-2 py-1 rounded-full text-sm ${
@@ -167,12 +165,11 @@ export function SetAvailabilityModal({
   );
 }
 
-function formatEther(wei: bigint): string {
+function formatPrice(value: bigint): string {
   try {
-    const etherValue = Number(wei) / 1e18;
-    return etherValue.toString();
+    return Number(value).toString();
   } catch (error) {
-    console.error("Error formatting ether value:", error);
+    console.error("Error formatting price value:", error);
     return "0";
   }
 }
